@@ -1,3 +1,39 @@
+<script>
+  // Self-contained newsletter signup. Kept out of the global initSite()
+  // boot sequence so a failure anywhere else on the page can't stop the
+  // form from working. Mirrors the original behaviour: validate, show the
+  // success state, then fire-and-forget a POST to the Apps Script endpoint
+  // configured via <meta name="signup-endpoint"> (see MAILING_LIST.md).
+  let email = $state('');
+  let submitted = $state(false);
+  let error = $state('');
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const v = email.trim();
+    if (!v || !/^\S+@\S+\.\S+$/.test(v)) {
+      error = 'Please enter a valid email address.';
+      return;
+    }
+    error = '';
+    submitted = true;
+
+    const meta = document.querySelector('meta[name="signup-endpoint"]');
+    const endpoint = meta ? (meta.content || '').trim() : '';
+    if (!endpoint) return; // not deployed yet — design-only success
+
+    const fd = new FormData();
+    fd.append('email', v);
+    fd.append('source', location.href);
+    fd.append('userAgent', navigator.userAgent);
+    // Apps Script web apps don't return CORS headers, so the response is
+    // opaque; we optimistically show success and fire-and-forget.
+    fetch(endpoint, { method: 'POST', body: fd, mode: 'no-cors' }).catch((err) =>
+      console.warn('[GBV] Signup POST failed:', err)
+    );
+  }
+</script>
+
 <section class="signup" id="signup" aria-label="Join the search">
 
   <header class="folio">
@@ -5,16 +41,27 @@
     <span class="folio-sub">— the aria returns —</span>
   </header>
 
-  <div class="envelope" id="envelopeArt">
+  <div class="envelope" id="envelopeArt" class:success={submitted}>
     <div class="side front">
       <div class="eyebrow">Folio II · in the post</div>
       <div class="stamp" aria-hidden="true"></div>
       <h2>Receive <em>updates</em> on the project.</h2>
       <p class="intro">One letter per quarter — production notes and the occasional clue from the road.</p>
-      <form id="signupForm" novalidate>
-        <input type="email" required placeholder="name@somewhere" id="emailInput" autocomplete="email">
+      <form id="signupForm" novalidate onsubmit={handleSubmit}>
+        <input
+          type="email"
+          required
+          placeholder="name@somewhere"
+          id="emailInput"
+          autocomplete="email"
+          aria-label="Email address"
+          bind:value={email}
+        />
         <button type="submit">Send ↗</button>
       </form>
+      {#if error}
+        <div class="signup-error" role="alert">{error}</div>
+      {/if}
       <div class="ok" id="envOk">Thank you. The next letter is in the post.</div>
     </div>
   </div>

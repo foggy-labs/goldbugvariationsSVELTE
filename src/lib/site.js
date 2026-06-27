@@ -1463,35 +1463,9 @@ function setupBeetle(){
   });
 }
 
-function setupSignup(){
-  const form = document.getElementById('signupForm');
-  const env = document.getElementById('envelopeArt');
-  if (!form) return;
-  // Endpoint is a Google Apps Script Web App URL configured via
-  // <meta name="signup-endpoint">. See MAILING_LIST.md for setup.
-  const meta = document.querySelector('meta[name="signup-endpoint"]');
-  const ENDPOINT = meta ? (meta.content || '').trim() : '';
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const v = document.getElementById('emailInput').value.trim();
-    if (!v || !/^\S+@\S+\.\S+$/.test(v)) return;
-
-    // Optimistic success — Apps Script web apps don't return CORS headers,
-    // so we can't read the response anyway. Show the success state and
-    // fire-and-forget the POST.
-    env.classList.add('success');
-
-    if (!ENDPOINT) return;   // not deployed yet — design-only success
-
-    const fd = new FormData();
-    fd.append('email', v);
-    fd.append('source', location.href);
-    fd.append('userAgent', navigator.userAgent);
-    fetch(ENDPOINT, { method: 'POST', body: fd, mode: 'no-cors' })
-      .catch(err => console.warn('[GBV] Signup POST failed:', err));
-  });
-}
+// Newsletter signup now lives in its own self-contained Svelte component
+// (src/lib/components/Signup.svelte) so it works independently of this
+// boot sequence. See that file for the submit handler.
 
 /* =========== §E  Section observer (mode tinting) + boot =========== */
 
@@ -2015,7 +1989,6 @@ function boot(){
   setupAriaAudio();
   setupCards();
   setupBeetle();
-  setupSignup();
   setupSectionObserver();
   setupEasterEggs();
   setupSoundFx();

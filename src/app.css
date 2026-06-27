@@ -1772,6 +1772,14 @@ body.is-investigation .audio-btn .bar { background: var(--cloud-body); }
 }
 .envelope.success form { display: none; }
 .envelope.success .ok { display: block; }
+.envelope .signup-error {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #8a2f1d;
+}
 .envelope .back {
   padding: 50px 56px;
   background: #d8c697;
